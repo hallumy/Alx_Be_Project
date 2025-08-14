@@ -15,6 +15,7 @@ class UserManager(BaseUserManager):
         
         user = self.model(
             email=self.normalize_email(email),
+            role=role
             
         )
         
@@ -41,7 +42,7 @@ class UserManager(BaseUserManager):
         password
         """
         user = self.create_user(
-            email,
+            email=email,
             role='admin',
             password=password,
         )
@@ -50,13 +51,22 @@ class UserManager(BaseUserManager):
         return user
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email       = models.EmailField(verbose_name="Email", max_length=255, unique=True)
+    ROLES = [
+        ('admin', 'Admin'),
+        ('driver', 'Driver'),
+        ('manager', 'Manager'),
+        ('dispatcher', 'Dispatcher'),
+        ('accountant', 'Accountant'),
+    ]
+    
+    email       = models.EmailField(verbose_name="Email", max_length=255, unique=True) 
+    role        = models.CharField(max_length=20, choices=ROLES, default='driver')
     is_active   = models.BooleanField(default=True)
     is_staff    = models.BooleanField(default=False)
     is_admin    = models.BooleanField(default=False)
     is_superuser= models.BooleanField(default=False)
-    last_login  = models.DateTimeField(verbose_name="Last Login", auto_now_add=True)
-    date_joined = models.DateTimeField(verbose_name="Date Joined", auto_now=True)
+    last_login  = models.DateTimeField(verbose_name="Last Login", null=True, blank=True)
+    date_joined = models.DateTimeField(verbose_name="Date Joined", auto_now_add=True)
     
     objects = UserManager()
     USERNAME_FIELD = "email"
@@ -78,4 +88,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         app_label
         """
         return self.is_admin or self.is_staff
-
