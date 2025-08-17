@@ -17,6 +17,7 @@ class Vehicle(models.Model):
         (20, '20 tons'),
         (28, '28 tons'),
         (30, '30 tons'),
+]
     reg_number = models.CharField(max_length=50, unique=True)
     model = models.CharField(max_length=100)
     fuel_type = models.CharField(max_length=50)

@@ -5,7 +5,7 @@ class FuelLog(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     distance = models.FloatField()
-    fuel_used = models.FlaotField()
+    fuel_used = models.FloatField()
 
     @property
     def fuel_consumption(self):

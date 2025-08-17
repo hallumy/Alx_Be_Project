@@ -1,7 +1,10 @@
 from .views import DriverViewSet
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'', DriverViewSet, name='driver')  # /api/drivers/
+router.register(r'', DriverViewSet, basename='driver')  # /api/drivers/
 
-urlpatterns = router.urls
-
+urlpatterns = [
+    path('', include(router.urls)),
+]

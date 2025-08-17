@@ -4,7 +4,7 @@ from .models import FuelLog
 
 class FuelLogSerializer(serializers.ModelSerializer):
     fuel_consumption = serializers.ReadOnlyField()
-    consumption_status = serialzers.ReadOnlyField()
+    consumption_status = serializers.ReadOnlyField()
 
     class Meta:
         model = FuelLog
