@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from .serializers import UserSerializer 
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 
 User = get_user_model()
 
@@ -12,12 +13,12 @@ User = get_user_model()
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
 
 # Login
 
 class LoginView(APIView):
-    permission = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         email = request.data.get("email")
@@ -30,8 +31,18 @@ class LoginView(APIView):
 
 # Logout
 class LogoutView(APIView):
-    permission = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self,request):
         logout(request)
         return Response({"message": "Logged out successfully"})
+
+@api_view(['GET'])
+def profile(request):
+    user = request.user
+    return Response({
+        "email": user.email,
+        "role": user.role,
+        "first_name": getattr(user, "first_name", ""),
+        "last_name": getattr(user, "last_name", "")
+    })

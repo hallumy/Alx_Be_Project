@@ -58,13 +58,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('dispatcher', 'Dispatcher'),
         ('accountant', 'Accountant'),
     ]
-    
+    # User Fields
     email       = models.EmailField(verbose_name="Email", max_length=255, unique=True) 
     role        = models.CharField(max_length=20, choices=ROLES, default='driver')
+    # Profile Fields
+    first_name  = models.CharField(max_length=30, blank=True, null=True)
+    last_name   = models.CharField(max_length=30, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    address     = models.TextField(blank=True, null=True)
+    profile_pic = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    # Permissions Field
     is_active   = models.BooleanField(default=True)
     is_staff    = models.BooleanField(default=False)
     is_admin    = models.BooleanField(default=False)
     is_superuser= models.BooleanField(default=False)
+    # Metadata
     last_login  = models.DateTimeField(verbose_name="Last Login", null=True, blank=True)
     date_joined = models.DateTimeField(verbose_name="Date Joined", auto_now_add=True)
     

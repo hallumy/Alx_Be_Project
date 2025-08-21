@@ -36,6 +36,3 @@ class CustomUserAdmin(BaseUserAdmin):
         
 admin.site.register(User, CustomUserAdmin)
 # Registers new UserAdmin
-admin.site.unregister(Group)
-#unregisters group
-    

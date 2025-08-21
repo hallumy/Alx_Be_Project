@@ -44,3 +44,11 @@ class UserChangeForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["email", "password", "role", "is_active", "is_admin"]
+        
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'date_of_birth', 'address', 'profile_pic', 'email']
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+        }
