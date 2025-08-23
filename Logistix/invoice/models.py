@@ -1,6 +1,6 @@
 from django.db import models
-from trips.models import Trips
 from product.models import Product
+from django.utils import timezone
 
 class Invoice(models.Model):
     STATUS_CHOICES = [
@@ -9,14 +9,14 @@ class Invoice(models.Model):
         ("unpaid", "Unpaid"),
         ("cancelled", "Cancelled"),
     ]
-    code     = models.ForeignKey(Product, on_delete=models.CASCADE)
-    DNote_no = models.CharField(max_length=20)
-    trip     = models.ManyToManyField(Trips, on_delete=CASCADE)
-    date_created = models.DateTimeField(verbose_name='Date Created', auto_add_now=True)
-    status   = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    subtotal = models.FloatField(max_digit= 10, decimal_place=2)
-    tax = models.FloatField(max_digit = 10, decimal_place=2)
-    Total = models.FloatField(max_digit=10, decimal_place=2)
+    invoice_number = models.CharField(max_length=100, unique=True)
+    code           = models.ForeignKey(Product, on_delete=models.CASCADE)
+    DNote_no       = models.CharField(max_length=20)
+    date_created   = models.DateTimeField(verbose_name='Created Date', auto_now_add=True)
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    subtotal       = models.FloatField()
+    tax            = models.FloatField()
+    Total          = models.FloatField()
 
     def mark_as_paid(self):
         self.status = "paid"

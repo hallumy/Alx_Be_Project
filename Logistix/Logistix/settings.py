@@ -46,7 +46,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'drivers',
     'vehicles',
-    'fuel_logs'
+    'fuel_logs',
+    'trips',
+    'route',
+    'product',
+    'invoice',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
