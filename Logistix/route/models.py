@@ -5,5 +5,5 @@ class Route(models.Model):
     Destination = models.CharField(max_length=30)
     Distance    = models.IntegerField()
     
-class Meta:
-    db_table = 'distance_table' 
+    class Meta:
+        db_table = 'route' 

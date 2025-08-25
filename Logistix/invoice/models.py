@@ -1,6 +1,7 @@
 from django.db import models
 from product.models import Product
 from django.utils import timezone
+from trips.models import Trips
 
 class Invoice(models.Model):
     STATUS_CHOICES = [
@@ -10,8 +11,7 @@ class Invoice(models.Model):
         ("cancelled", "Cancelled"),
     ]
     invoice_number = models.CharField(max_length=100, unique=True)
-    code           = models.ForeignKey(Product, on_delete=models.CASCADE)
-    DNote_no       = models.CharField(max_length=20)
+    trips          = models.ForeignKey(Trips, related_name="trips", on_delete=models.CASCADE)
     date_created   = models.DateTimeField(verbose_name='Created Date', auto_now_add=True)
     status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     subtotal       = models.FloatField()
@@ -34,6 +34,15 @@ class Invoice(models.Model):
         self.tax = tax
         self.total = subtotal + tax
         self.save()
+
+    def get_delivery_notes(self):
+        """
+        Collect all delivery note numbers from all trips in this invoice.
+        """
+        delivery_notes = []
+        for trip in self.trips.all():
+            delivery_notes.extend(trip.delivery_notes.values_list('dnote_no', flat=True))
+        return list(set(delivery_notes))
         
     def __str__(self):
         return f"Invoice for {self.month.strftime('%B %Y')}"
