@@ -9,4 +9,4 @@ class Product(models.Model):
         db_table = 'product'
         
     def __str__(self):
-        return f"{self.code} - {self.weight_kg}"
+        return f"{self.code}"

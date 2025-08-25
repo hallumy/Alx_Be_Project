@@ -17,10 +17,7 @@ class Trips(models.Model):
     fuel_used=models.FloatField()
     dnote_no = models.IntegerField()
     quantity  = models.IntegerField()
-
-    def __str__(self):
-        return f"Trip {self.primary_id} - {self.product.code} on {self.route.origin} to {self.route.destination}"
-
+    
     @property
     def distance(self):
         """
@@ -41,7 +38,12 @@ class Trips(models.Model):
     def total(self):
         if self.standard_charge is not None:
             return self.standard_charge
+        if None in [self.weight, self.distance, self.unit_price, self.quantity]:
+            return 0
         return (self.weight * self.distance * self.unit_price * self.quantity) /1000
+    
+    def __str__(self):
+        return f"Trip {self.primary_id} - {self.product.code} on {self.route.origin} to {self.route.destination}"
 
 class DeliveryNote(models.Model):
     dnote_no = models.CharField(max_length=50)
