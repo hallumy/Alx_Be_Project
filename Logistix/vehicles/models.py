@@ -21,7 +21,7 @@ class Vehicle(models.Model):
     reg_number = models.CharField(max_length=50, unique=True)
     model = models.CharField(max_length=100)
     fuel_type = models.CharField(max_length=50)
-    efficiency = models.FloatField(help_text='km per litre')
+    efficiency = models.FloatField(help_text='km per litre', default= 0.00) # to write the formula later
     last_service_date = models.DateField(null=True, blank=True)
     tonnage = models.IntegerField(choices=TONNAGE_CHOICES, default=1, help_text='Vehicle weight')
 

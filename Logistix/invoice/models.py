@@ -11,7 +11,7 @@ class Invoice(models.Model):
         ("cancelled", "Cancelled"),
     ]
     invoice_number = models.CharField(max_length=100, unique=True)
-    trips          = models.ForeignKey(Trips, related_name="trips", on_delete=models.CASCADE)
+    trips          = models.ManyToManyField(Trips, related_name="invoices")
     date_created   = models.DateTimeField(verbose_name='Created Date', auto_now_add=True)
     status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     subtotal       = models.FloatField()
@@ -28,12 +28,17 @@ class Invoice(models.Model):
         Adds all trips in the invioce and calculates
         totals with tax
         """
-        subtotal = sum(trip.price for trip in self.trip.all())
+        subtotal = sum(trip.price for trip in self.trips.all())
         tax = subtotal * tax_rate
         self.subtotal = subtotal
         self.tax = tax
         self.total = subtotal + tax
         self.save()
+
+    def save(self, *args, **kwargs):
+        self.calculate_totals()
+        super().save(*args, **kwargs)
+
 
     def get_delivery_notes(self):
         """

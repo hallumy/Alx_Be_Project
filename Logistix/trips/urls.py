@@ -1,7 +1,10 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from .views import TripViewSet
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'', TripViewSet, basename='trip')
 
 urlpatterns = [
-    path('', views.TripListView.as_view(), name='trip-list'),       # GET all trips / POST new trip
-    path('<int:pk>/', views.TripDetailView.as_view(), name='trip-detail'),  # GET/PUT/DELETE trip by ID
+    path('', include(router.urls)),
 ]

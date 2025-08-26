@@ -2,35 +2,55 @@ from rest_framework import serializers
 from .models import Trips
 from product.models import Product
 from route.models import Route
-from product.serializers import ProductSerializer 
-from route.serializers import RouteSerializer
-from vehicles.serializers import VehicleSerializer
+from vehicles.models import Vehicle
+from drivers.models import Driver
 
 class TripSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(read_only=True)
-    route = RouteSerializer(read_only=True)
-    product_code = serializers.CharField(source='product.code')
-    product_weight = serializers.FloatField(source='product.weight_kg')
-    route_origin = serializers.CharField(source='route.origin')
-    route_destination = serializers.CharField(source='route.destination')
-    reg_number = serializers.CharField(source='vehicle.reg_number')
-    distance = serializers.IntegerField(source='route.distance')
-    quantity = serializers.FloatField()
-    total = serializers.ReadOnlyField()
+    """
+    Serializer for the Trips model.
+
+    Handles input for creating/updating trips using primary key references,
+    and outputs detailed trip-related fields including related model data.
+    """
+
+    product_code = serializers.CharField(source='product.code', read_only=True)
+    product_weight = serializers.FloatField(source='product.weight_kg', read_only=True)
+    route_origin = serializers.CharField(source='route.origin', read_only=True)
+    route_destination = serializers.CharField(source='route.destination', read_only=True)
+    reg_number = serializers.CharField(source='vehicle.reg_number', read_only=True)
+    distance = serializers.IntegerField(source='route.distance', read_only=True)
+    weight = serializers.FloatField(read_only=True)
+    total = serializers.FloatField(read_only=True)
+
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    route = serializers.PrimaryKeyRelatedField(queryset=Route.objects.all())
+    vehicle = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all())
+    driver = serializers.PrimaryKeyRelatedField(queryset=Driver.objects.all())
 
     class Meta:
         model = Trips
         fields = [
-            'id', 'product', 'product_code', 'product_weight', 'route', 'route_origin', 'route_destination',
-            'distance', 'standard_charge','reg_number','dnote_no', 'fuel_used', 'weight', 'quantity', 'unit_price', 'total'
+            'id',
+            'product', 'product_code', 'product_weight',
+            'route', 'route_origin', 'route_destination', 'distance',
+            'vehicle', 'reg_number',
+            'driver', 'dnote_no', 'fuel_used',
+            'quantity', 'unit_price', 'standard_charge',
+            'weight', 'total'
         ]
 
     def validate_quantity(self, value):
+        """
+        Ensure quantity is a positive number.
+        """
         if value <= 0:
             raise serializers.ValidationError("Quantity must be greater than 0.")
         return value
 
     def validate_unit_price(self, value):
+        """
+        Ensure unit price is a positive number.
+        """
         if value <= 0:
             raise serializers.ValidationError("Unit price must be greater than 0.")
         return value

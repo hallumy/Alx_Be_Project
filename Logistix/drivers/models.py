@@ -9,3 +9,19 @@ class Driver(models.Model):
     def __str__(self):
         return self.user.email
 
+    def clean(self):
+        """
+        Custom validation method to validate the license number format
+        and other fields.
+        """
+        if len(self.license_number) < 10:
+            raise ValidationError("License number must be at least 10 characters long.")
+        
+        if self.assigned_vehicle:
+            if self.assigned_vehicle.is_assigned:
+                raise ValidationError("This vehicle is already assigned to another driver.")
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
