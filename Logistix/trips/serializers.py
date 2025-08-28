@@ -39,6 +39,37 @@ class TripSerializer(serializers.ModelSerializer):
             'weight', 'total'
         ]
 
+    def validate(self, data):
+        """
+        Restrict fields if the user is a driver.
+        """
+        user = self.context['request'].user
+        if hasattr(user, 'role') and user.role == 'driver':
+            # Fields drivers are allowed to set
+            allowed_fields = {
+                'product', 'route', 'vehicle', 'dnote_no', 'quantity'
+            }
+
+            for field in data.keys():
+                if field not in allowed_fields:
+                    raise serializers.ValidationError(f"Drivers cannot set '{field}' field.")
+
+        return data
+    
+    def create(self, validated_data):
+        """
+        Automatically assign the driver from request.user for drivers.
+        """
+        user = self.context['request'].user
+        if hasattr(user, 'role') and user.role == 'driver':
+            driver_instance = Driver.objects.filter(user=user).first()
+            if not driver_instance:
+                raise serializers.ValidationError("Driver profile not found for this user.")
+            validated_data['driver'] = driver_instance
+
+        return super().create(validated_data)
+
+
     def validate_quantity(self, value):
         """
         Ensure quantity is a positive number.

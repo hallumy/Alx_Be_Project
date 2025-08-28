@@ -4,11 +4,15 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the custom User model.
+    Includes fields: id, email, username, first_name, last_name, role, and password (write-only).
+    """
     password = serializers.CharField(write_only = True, required=False)
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'role', 'is_staff', 'password', 'date_joined']
+        fields = ['id', 'username', 'email', 'role', 'is_staff', 'password', 'date_joined']
         read_only_fields = ['id', 'date_joined']
     
     def create(self, validated_data):
@@ -29,3 +33,4 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+    

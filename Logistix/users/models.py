@@ -2,54 +2,31 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, role, password=None):
-        """
-        Creates and saves a user with the given email, role and 
-        password.
-        """
-        
+    def create_user(self, username, email, password=None, **extra_fields):
         if not email:
-            raise ValueError("Users must have an email address")
-        if not password:
-            raise ValueError("Please enter a valid password")
-        
-        user = self.model(
-            email=self.normalize_email(email),
-            role=role
-            
-        )
-        
-        if role == 'admin':
-            user.is_staff = True
-            user.is_admin = True
-            user.is_superuser = True
-        elif role in ['driver', 'manager']:
-            user.is_staff = True
-            user.is_admin = False
-            user.is_superuser = False
-        else:
-            user.is_staff = False
-            user.is_admin = False
-            user.is_superuser = False
-        
+            raise ValueError('Users must have an email address')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
-        return user
-    
-    def create_superuser(self, email, role='admin', password=None):
+        return user  
+        from django.contrib.auth.models import BaseUserManager    
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
         """
         Creates and saves a superuser with the given email and 
         password
         """
-        user = self.create_user(
-            email=email,
-            role='admin',
-            password=password,
-        )
-        user.is_admin = True
-        user.save(using=self._db)
-        return user
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
 
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(username, email, password, **extra_fields)
+            
 class User(AbstractBaseUser, PermissionsMixin):
     ROLES = [
         ('admin', 'Admin'),
@@ -59,6 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('accountant', 'Accountant'),
     ]
     # User Fields
+    username    = models.CharField(max_length=20, unique=True, null=True, blank=True)
     email       = models.EmailField(verbose_name="Email", max_length=255, unique=True) 
     role        = models.CharField(max_length=20, choices=ROLES, default='driver')
     # Profile Fields
@@ -77,11 +55,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(verbose_name="Date Joined", auto_now_add=True)
     
     objects = UserManager()
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ['email']
     
     def __str__(self):
-        return self.email
+        return self.username
     
     def has_perm(self, perm, obj=None):
         """

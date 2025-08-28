@@ -3,6 +3,8 @@ from rest_framework import viewsets, status
 from .models import Driver
 from .serializers import DriverSerializer
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class DriverViewSet(viewsets.ModelViewSet):
     """
@@ -11,6 +13,8 @@ class DriverViewSet(viewsets.ModelViewSet):
     """
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
         """

@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from .models import Invoice
 from .serializers import InvoiceSerializer
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -12,6 +14,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     """
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
         """
