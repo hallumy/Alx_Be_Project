@@ -13,7 +13,7 @@ class Trips(models.Model):
     unit_price = models.FloatField(blank=True, null=True)
     standard_charge = models.FloatField(null=True, blank=True)
     date    = models.DateField(verbose_name='Date', auto_now_add=True)
-    weight  = models.FloatField(null=True, blank=True)
+    weight_kg  = models.FloatField(null=True, blank=True)
     distance = models.FloatField(null=True, blank=True)
 
     
@@ -23,20 +23,19 @@ class Trips(models.Model):
     total = models.FloatField(blank=True, null=True)
     
     def save(self, *args, **kwargs):
+        if self.product and not self.weight_kg:
+            self.weight_kg = self.product.weight_kg
+        if self.route and not self.distance:
+            self.distance = self.route.distance
+
         if self.standard_charge is not None:
             self.total = self.standard_charge
-        elif None not in [self.weight, self.distance, self.unit_price, self.quantity]:
-            self.total = (self.weight * self.distance * self.unit_price * self.quantity) / 1000
+        elif all(v is not None for v in [self.weight_kg, self.distance, self.unit_price, self.quantity]):
+            self.total = (self.weight_kg * self.distance * self.unit_price * self.quantity) / 1000
         else:
             self.total = 0
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"Trip {self.primary_id} - {self.product.code} on {self.route.origin} to {self.route.destination}"
+        return f"Trip {self.id} {self.product.code} on {self.route.origin} to {self.route.destination} for {self.vehicle}"
 
-class DeliveryNote(models.Model):
-    dnote_no = models.CharField(max_length=50)
-    trip = models.ForeignKey(Trips, related_name='delivery_notes', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.dnote_no

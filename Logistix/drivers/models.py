@@ -1,10 +1,14 @@
 from django.db import models
 from users.models import User
+from django.core.exceptions import ValidationError
+from vehicles.models import Vehicle
+
 
 class Driver(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     license_number = models.CharField(max_length=50)
-    assigned_vehicle = models.ForeignKey('vehicles.Vehicle', on_delete=models.SET_NULL, null=True, blank=True)
+    vehicle = models.OneToOneField('vehicles.Vehicle', on_delete=models.SET_NULL, null=True, blank=True)
+    is_assigned = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.email
@@ -17,9 +21,8 @@ class Driver(models.Model):
         if len(self.license_number) < 10:
             raise ValidationError("License number must be at least 10 characters long.")
         
-        if self.assigned_vehicle:
-            if self.assigned_vehicle.is_assigned:
-                raise ValidationError("This vehicle is already assigned to another driver.")
+        if Driver.objects.filter(vehicle=self.vehicle).exclude(pk=self.pk).exists():
+            raise ValidationError("This vehicle is already assigned to another driver.")
     
     def save(self, *args, **kwargs):
         self.full_clean()

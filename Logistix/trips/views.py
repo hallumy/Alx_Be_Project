@@ -41,7 +41,7 @@ class TripViewSet(viewsets.ModelViewSet):
             return None, Response({'detail': 'Product not found.'}, status=status.HTTP_400_BAD_REQUEST)
 
         data['product'] = product.id
-        data['weight'] = product.weight_kg
+        data['weight_kg'] = product.weight_kg
 
         origin = data.get('origin')
         destination = data.get('destination')
@@ -57,6 +57,10 @@ class TripViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
+        data.pop('weight_kg', None)
+        data.pop('distance', None)
+        data.pop('total', None)
+
         data, error_response = self.get_trip_data(data)
         if error_response:
             return error_response

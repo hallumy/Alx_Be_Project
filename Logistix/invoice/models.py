@@ -2,6 +2,10 @@ from django.db import models
 from product.models import Product
 from django.utils import timezone
 from trips.models import Trips
+from vehicles.models import Vehicle
+from django.core.exceptions import ValidationError
+
+
 
 class Invoice(models.Model):
     STATUS_CHOICES = [
@@ -12,11 +16,12 @@ class Invoice(models.Model):
     ]
     invoice_number = models.CharField(max_length=100, unique=True)
     trips          = models.ManyToManyField(Trips, related_name="invoices")
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True, blank = True, related_name='invoices')
     date_created   = models.DateTimeField(verbose_name='Created Date', auto_now_add=True)
     status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     subtotal       = models.FloatField()
     tax            = models.FloatField()
-    Total          = models.FloatField()
+    total          = models.FloatField()
 
     def mark_as_paid(self):
         self.status = "paid"
@@ -28,16 +33,33 @@ class Invoice(models.Model):
         Adds all trips in the invioce and calculates
         totals with tax
         """
-        subtotal = sum(trip.price for trip in self.trips.all())
+        trips = self.trips.all()
+        subtotal = sum(trip.total for trip in trips)
         tax = subtotal * tax_rate
         self.subtotal = subtotal
         self.tax = tax
         self.total = subtotal + tax
-        self.save()
 
     def save(self, *args, **kwargs):
-        self.calculate_totals()
+        if self.pk is not None and not self.trips.exists():
+            self.trips.set(self.trips.all())
         super().save(*args, **kwargs)
+        if self.trips.exists():
+            self.calculate_totals()
+            super().save(update_fields=["subtotal", "tax", "total"])
+    
+    def clean(self):
+        if not self.pk:
+            return
+
+        super().clean()
+        trips = self.trips.all()
+        if self.trips.count() > 1:
+            reg_numbers = [trip.vehicle.registration_number for trip in self.trips.all()]
+            if len(set(reg_numbers)) > 1:
+                raise ValidationError("All trips in an invoice must belong to the same vehicle (registration number).")
+            if self.vehicle_id and self.vehicle_id not in vehicle_ids:
+                raise ValidationError("Selected vehicle does not match the trips' vehicle.")
 
 
     def get_delivery_notes(self):
@@ -50,4 +72,5 @@ class Invoice(models.Model):
         return list(set(delivery_notes))
         
     def __str__(self):
-        return f"Invoice for {self.month.strftime('%B %Y')}"
+        date_str = self.date_created.strftime('%Y-%m-%d') if self.date_created else "No Date"
+        return f"Invoice {self.invoice_number} - Created on {date_str}"

@@ -19,7 +19,7 @@ class TripSerializer(serializers.ModelSerializer):
     route_destination = serializers.CharField(source='route.destination', read_only=True)
     reg_number = serializers.CharField(source='vehicle.reg_number', read_only=True)
     distance = serializers.IntegerField(source='route.distance', read_only=True)
-    weight = serializers.FloatField(read_only=True)
+    weight_kg = serializers.FloatField(read_only=True)
     total = serializers.FloatField(read_only=True)
 
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
@@ -36,7 +36,7 @@ class TripSerializer(serializers.ModelSerializer):
             'vehicle', 'reg_number',
             'driver', 'dnote_no', 'fuel_used',
             'quantity', 'unit_price', 'standard_charge',
-            'weight', 'total'
+            'weight_kg', 'total'
         ]
 
     def validate(self, data):
@@ -55,6 +55,24 @@ class TripSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(f"Drivers cannot set '{field}' field.")
 
         return data
+
+    def get_product_code(self, obj):
+        return obj.product.code if obj.product else None
+
+    def get_product_weight(self, obj):
+        return obj.product.weight_kg if obj.product else None
+
+    def get_route_origin(self, obj):
+        return obj.route.origin if obj.route else None
+
+    def get_route_destination(self, obj):
+        return obj.route.destination if obj.route else None
+
+    def get_reg_number(self, obj):
+        return obj.vehicle.reg_number if obj.vehicle else None
+
+    def get_distance(self, obj):
+        return obj.route.distance if obj.route else None
     
     def create(self, validated_data):
         """
@@ -67,7 +85,13 @@ class TripSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Driver profile not found for this user.")
             validated_data['driver'] = driver_instance
 
+            if 'unit_price' not in validated_data or validated_data.get('unit_price') in [None, 0]:
+                validated_data['unit_price'] = 0
+
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
 
 
     def validate_quantity(self, value):
